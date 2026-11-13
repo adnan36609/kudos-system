@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kudos</title>
+<style>
+:root { --ink:#1d2433; --muted:#5d6678; --paper:#f7f6f2; --card:#fff; --line:#dedbd2; --accent:#1f5f5b; --bad:#a63a2b; }
+* { box-sizing: border-box; }
+body { margin:0; font:16px/1.55 Georgia, "Times New Roman", serif; color:var(--ink); background:var(--paper); }
+a, button, input, select, textarea { font:inherit; }
+header { display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap; padding:.9rem 1.25rem; border-bottom:1px solid var(--line); background:var(--card); }
+header strong { font-size:1.25rem; }
+main { max-width:44rem; margin:0 auto; padding:1.25rem; }
+.card { background:var(--card); border:1px solid var(--line); border-radius:6px; padding:1rem 1.1rem; margin-bottom:1rem; }
+label { display:block; font-weight:bold; margin:.6rem 0 .25rem; }
+select, textarea, input { width:100%; padding:.55rem; border:1px solid var(--line); border-radius:4px; background:#fff; }
+button { padding:.5rem 1rem; border:1px solid var(--accent); background:var(--accent); color:#fff; border-radius:4px; cursor:pointer; }
+button.quiet { background:transparent; color:var(--accent); }
+button.danger { background:transparent; color:var(--bad); border-color:var(--bad); }
+:focus-visible { outline:3px solid #e0a100; outline-offset:2px; }
+.meta { color:var(--muted); font-size:.9rem; }
+.msg { margin:.4rem 0; overflow-wrap:anywhere; }
+.flash { padding:.6rem .9rem; border-radius:4px; margin-bottom:1rem; border:1px solid var(--line); background:var(--card); }
+.flash.error { border-color:var(--bad); color:var(--bad); }
+.hidden-item { border-style:dashed; opacity:.8; }
+.admin-row { display:flex; gap:.5rem; flex-wrap:wrap; margin-top:.6rem; align-items:center; }
+.admin-row input[name=reason] { flex:1 1 10rem; width:auto; }
+form.inline { display:contents; }
+.pager { display:flex; justify-content:space-between; }
+</style>
+</head>
+<body>
+<header>
+  <strong>Kudos</strong>
+  {% if user %}
+  <form method="post" action="{{ url_for('logout') }}" class="inline">
+    <span class="meta">{{ user.display_name }}{% if user.role == 'admin' %} (admin){% endif %}</span>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <button class="quiet" type="submit">Sign out</button>
+  </form>
+  {% endif %}
+</header>
+<main>
+  {% for category, text in get_flashed_messages(with_categories=true) %}
+    <div class="flash {{ category }}" role="status">{{ text }}</div>
+  {% endfor %}
+  {% block body %}{% endblock %}
+</main>
+</body>
+</html>

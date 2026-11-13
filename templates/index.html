@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block body %}
+<form method="post" action="{{ url_for('create_kudos') }}" class="card">
+  <h1>Thank a colleague</h1>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  <label for="recipient_id">Who do you want to thank?</label>
+  <select id="recipient_id" name="recipient_id" required>
+    <option value="">Choose a colleague</option>
+    {% for c in colleagues %}<option value="{{ c.id }}">{{ c.display_name }}</option>{% endfor %}
+  </select>
+  <label for="message">Message (up to {{ MAX_LEN }} characters)</label>
+  <textarea id="message" name="message" rows="3" maxlength="{{ MAX_LEN }}" required></textarea>
+  <p><button type="submit">Send kudos</button></p>
+</form>
+
+<h2>Recent kudos</h2>
+{% for k in kudos %}
+<article class="card {% if not k.is_visible %}hidden-item{% endif %}">
+  <div class="meta">{{ k.sender }} thanked {{ k.recipient }} on {{ k.created_at[:10] }}</div>
+  <p class="msg">{{ k.message }}</p>
+  {% if not k.is_visible %}<div class="meta">Hidden from the feed{% if k.moderation_reason %}: {{ k.moderation_reason }}{% endif %}</div>{% endif %}
+  {% if user.role == 'admin' %}
+  <div class="admin-row">
+    {% if k.is_visible %}
+    <form method="post" action="{{ url_for('hide_kudos', kudos_id=k.id) }}" class="inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input name="reason" maxlength="200" placeholder="Reason for hiding (optional)" aria-label="Reason for hiding">
+      <button class="quiet" type="submit">Hide</button>
+    </form>
+    {% else %}
+    <form method="post" action="{{ url_for('restore_kudos', kudos_id=k.id) }}" class="inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <button class="quiet" type="submit">Restore</button>
+    </form>
+    {% endif %}
+    <form method="post" action="{{ url_for('delete_kudos', kudos_id=k.id) }}" class="inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <button class="danger" type="submit">Delete</button>
+    </form>
+  </div>
+  {% endif %}
+</article>
+{% else %}
+<p class="meta">No kudos yet. Send the first one above.</p>
+{% endfor %}
+<nav class="pager">
+  {% if page > 1 %}<a href="{{ url_for('index', page=page-1) }}">Newer</a>{% else %}<span></span>{% endif %}
+  {% if has_next %}<a href="{{ url_for('index', page=page+1) }}">Older</a>{% endif %}
+</nav>
+{% endblock %}
